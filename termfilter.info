@@ -1,0 +1,9 @@
+name = Terms Filter
+description = "A filter which replaces whitelisted terms with &lt;a&gt; tags."
+core = 7.x
+package = "Input filters"
+
+files[] = termfilter.install
+files[] = termfilter.module
+files[] = termfilter.admin.inc
+files[] = termfilter.test

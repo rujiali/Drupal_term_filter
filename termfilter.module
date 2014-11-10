@@ -1,0 +1,197 @@
+<?php
+
+/**
+ * @file
+ * Main module file for termfilter. Replaces terms inside posts with filtered versions.
+ */
+
+
+include_once(drupal_get_path('module','termfilter') .'/termfilter.admin.inc');
+
+
+/**
+ * Implements hook_filter_info().
+ */
+function termfilter_filter_info() {
+  $filters = array();
+
+  $filters['termfilter'] = array(
+    'title'             => t('Term filter'),
+    'description'       => termfilter_help('admin/modules#description', array()),
+    'process callback'  => '_filter_termfilter_process',
+    'settings callback' => '_filter_termfilter_settings',
+    'tips callback'     => '_filter_termfilter_tips',
+    'default settings'  => array(),
+  );
+
+  return $filters;
+}
+
+
+/**
+ * Implements hook_help().
+ *
+ * @param $section
+ *   string file path
+ *
+ * @return
+ *   string
+ */
+function termfilter_help($page = 'admin/help#termfilter', $arg) {
+  switch ($page) {
+    case 'admin/modules#description':
+      return t('<p>Replaces whitelisted terms inside posts with &lt;a&gt; tags.</p>');
+    case 'admin/help#termfilter':
+      return t('<p>The Termfilter module allows you to filter terms in site content and replace the filtered terms with a tags linking to the taxonomy term view page.');
+    case 'admin/config/content/termfilter':
+      return t('<p>In order for filtering to work on the body text of a node or comment, you must activate the Termfilter filter for the input formats you wish to enable filtering for. Check your filter settings at <a href="@filter">Input Formats</a>.</p>', array('@filter' => url('admin/config/content/filters')));
+  }
+}
+
+
+/**
+ * Implements hook_perm().
+ *
+ * @return
+ *   array of permissions
+ */
+function termfilter_perm() {
+  return array('administer terms filtered');
+}
+
+
+/**
+ * Implements hook_menu().
+ *
+ * @return
+ *   array of menu information
+ */
+function termfilter_menu() {
+  $items = array();
+
+  $items['admin/config/content/termfilter'] = array(
+    'title' => 'Term filter',
+    'description' => 'Replaces terms inside posts with A tags.',
+    'page arguments' => array('termfilter_admin_list'),
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('administer terms filtered'),
+  );
+
+  return $items;
+}
+
+/**
+ * Tips for termfilter.
+ *
+ * @return
+ *   a long or short notice of the filters behavior
+ */
+function _filter_termfilter_tips($delta, $format, $long = FALSE) {
+  if ($long) {
+    return t("If you include a term in your post that's in the whitelist, it will be augmented by an &lt;a&gt; tag.") .'<br />';
+    }
+  else {
+    variable_set('display_termfilter_short', 1);
+    return t('Whitelisted terms will be augmented with an &lt;a&gt; tag.');
+  }
+}
+
+
+/**
+ * Settings for termfilter.
+ */
+function _filter_termfilter_settings($form, &$form_state) {
+  $form = array();
+
+  $form['term_filter'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Term filter'),
+    '#description' => t('You can define a global list of terms to be filtered on the <a href="!url">Terms Filter settings page</a>.', array('!url' => url('admin/config/content/termfilter'))),
+  );
+
+  return $form;
+}
+
+
+/**
+ * Serves as hook_filter_info() process operation callback.
+ * Searches for whitelisted terms and replaces them with <a> tags.
+ *
+ * @param $text
+ *   the text to be filtered
+ * @param $filter
+ *   the filter data
+ *
+ * @return
+ *   returns the text, processed by the filter
+ */
+function _filter_termfilter_process($text) {
+  $list = _termfilter_list();
+  return _termfilter_perform_subs($text, $list);
+}
+
+/**
+ * Perform the actual term substitution.
+ *
+ * We specifically match text that is outside of HTML tags
+ * so that for example <img src="http://vhs.org/image.jpg" /> doesn't get the
+ * 'VHS' part substituted as that would break the image. We use
+ * preg_replace_callback to call our anonymous function for each matching
+ * group that is found.
+ *
+ * In each match, we split on word boundaries, and then check each piece of the
+ * split against the list of abbreviations.
+ *
+ */
+function _termfilter_perform_subs($text, $list) {
+  // We prepare a keyed array called $fast_array because this is the
+  // quickest way to search later on (using isset()).
+  $fast_array = array();
+  foreach ($list as $item => $vid) {
+    // We want to split on word boundaries, unfortunately PCRE considers words
+    // to include underscores but not other characters like dashes and slashes,
+    // so we have this hack that subs all characters we want to allow in
+    // abbreviations and the target with this massive random blob of all word
+    // characters, so that we can correctly split, switching it back later.
+    $key = preg_replace('#-#u', '___999999DASH___', $item);
+    $key = preg_replace('#/#u', '___111111SLASH___', $key);
+    $fast_array[$key] = $vid;
+  }
+
+  // Provide an anonymous function for the preg_replace. This function gets
+  // called a LOT, so be careful about optimization of anything that goes in
+  // here.
+  $callback = function($matches) use ($fast_array) {
+    // Split the text into an array of words, on word boundaries.
+    $words = preg_split('/\b/u', $matches[0]);
+
+    // For each word, check if it matches our abbreviation filter.
+    foreach ($words as $key => $word) {
+      if (!empty($word)) {
+        if (isset($fast_array[$word])) {
+          $term = taxonomy_get_term_by_name($word, $fast_array[$word]);
+          $url = drupal_get_path_alias('taxonomy/term/' . $term[1]->tid, 'und');
+          $words[$key] = '<a title="' . $fast_array[$word] . '" href="/' . $url . '">' . $word . '</a>';
+        }
+      }
+    }
+    return implode('', $words);
+  };
+
+  // Match all content that is not part of a tag, i.e. not between < and >.
+  // (?:) = create a non-capturing group.
+  // (?:^|>) = the beginning of the string or a closing HTML tag.
+  // (?:[^<]|$)+ = characters that are not an opening tag or end of the string.
+  //
+  // Don't mess with this regular expression unless you understand the PCRE
+  // stack limitations. Basically, removing the double plus signs causes a
+  // stack overflow and thus a segmentation fault in PHP, as PCRE recurses too
+  // deeply. @see http://www.manpagez.com/man/3/pcrestack/ the section on
+  // reducing stack usage.
+  $text = preg_replace_callback('/(?:^|>)++(?:[^<]++|$)+/u', $callback, $text);
+
+  $text = preg_replace('/___999999DASH___/u', '-', $text);
+  $text = preg_replace('/___111111SLASH___/u', '/', $text);
+
+  return $text;
+}
