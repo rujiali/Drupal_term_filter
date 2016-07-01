@@ -1,0 +1,3 @@
+services:
+  termfilter.data:
+    class: Drupal\termfilter\TermfilterDatao

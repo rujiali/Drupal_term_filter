@@ -1,0 +1,7 @@
+abbrfilter.admin:
+  path: '/admin/config/content/termfilter'
+  defaults:
+    _form: '\Drupal\termfilter\Form\TermfilterForm'
+    _title: 'Term filter'
+  requirements:
+    _permission: 'administer term filter'

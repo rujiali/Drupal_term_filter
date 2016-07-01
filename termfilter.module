@@ -9,24 +9,6 @@
 include_once(drupal_get_path('module','termfilter') .'/termfilter.admin.inc');
 
 
-/**
- * Implements hook_filter_info().
- */
-function termfilter_filter_info() {
-  $filters = array();
-
-  $filters['termfilter'] = array(
-    'title'             => t('Term filter'),
-    'description'       => termfilter_help('admin/modules#description', array()),
-    'process callback'  => '_filter_termfilter_process',
-    'settings callback' => '_filter_termfilter_settings',
-    'tips callback'     => '_filter_termfilter_tips',
-    'default settings'  => array(),
-  );
-
-  return $filters;
-}
-
 
 /**
  * Implements hook_help().
@@ -59,76 +41,6 @@ function termfilter_perm() {
   return array('administer terms filtered');
 }
 
-
-/**
- * Implements hook_menu().
- *
- * @return
- *   array of menu information
- */
-function termfilter_menu() {
-  $items = array();
-
-  $items['admin/config/content/termfilter'] = array(
-    'title' => 'Term filter',
-    'description' => 'Replaces terms inside posts with A tags.',
-    'page arguments' => array('termfilter_admin_list'),
-    'page callback' => 'drupal_get_form',
-    'access arguments' => array('administer terms filtered'),
-  );
-
-  return $items;
-}
-
-/**
- * Tips for termfilter.
- *
- * @return
- *   a long or short notice of the filters behavior
- */
-function _filter_termfilter_tips($delta, $format, $long = FALSE) {
-  if ($long) {
-    return t("If you include a term in your post that's in the whitelist, it will be augmented by an &lt;a&gt; tag.") .'<br />';
-    }
-  else {
-    variable_set('display_termfilter_short', 1);
-    return t('Whitelisted terms will be augmented with an &lt;a&gt; tag.');
-  }
-}
-
-
-/**
- * Settings for termfilter.
- */
-function _filter_termfilter_settings($form, &$form_state) {
-  $form = array();
-
-  $form['term_filter'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Term filter'),
-    '#description' => t('You can define a global list of terms to be filtered on the <a href="!url">Terms Filter settings page</a>.', array('!url' => url('admin/config/content/termfilter'))),
-  );
-
-  return $form;
-}
-
-
-/**
- * Serves as hook_filter_info() process operation callback.
- * Searches for whitelisted terms and replaces them with <a> tags.
- *
- * @param $text
- *   the text to be filtered
- * @param $filter
- *   the filter data
- *
- * @return
- *   returns the text, processed by the filter
- */
-function _filter_termfilter_process($text) {
-  $list = _termfilter_list();
-  return _termfilter_perform_subs($text, $list);
-}
 
 /**
  * Perform the actual term substitution.
