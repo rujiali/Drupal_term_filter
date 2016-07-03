@@ -1,0 +1,6 @@
+name: Terms Filter
+description: A filter which replaces whitelisted terms with &lt;a&gt; tags.
+core: 8.x
+package: Input filters
+version: VERSION
+type: module

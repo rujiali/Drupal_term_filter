@@ -1,10 +1,11 @@
 <?php
 
-namespace Drupal\termfilter\TermfilterForm;
+namespace Drupal\termfilter\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\system\Form;
+use Drupal\taxonomy\Entity\Vocabulary;
 
 class TermfilterForm extends ConfigFormBase {
 
@@ -20,14 +21,14 @@ class TermfilterForm extends ConfigFormBase {
     // Compose the vocabulary list.
     $vocab_list = taxonomy_vocabulary_get_names();
     $checklist_vocab_array = array();
-    foreach ($vocab_list as $item) {
-      $key = $item->machine_name;
-      $value = $item->name;
+    foreach ($vocab_list as $key => $item) {
+      $vocab =  Vocabulary::load($key);
+      $value = $vocab->label();
       $checklist_vocab_array[$key] = $value;
     }
 
     $termfilter_settings = \Drupal::config('termfilter.settings');
-    $default_vocabs = $termfilter_settings->get('termfilter_vocablist');
+    $default_vocabs = $termfilter_settings->get('vocablist');
     
     $form['termfilter_vocablist'] = array(
       '#type'             => 'radios',
@@ -36,12 +37,18 @@ class TermfilterForm extends ConfigFormBase {
       '#options'          => $checklist_vocab_array ,
       '#default_value'    => $default_vocabs,
     );
+
+    $form['actions']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => $this->t('Save'),
+      '#button_type' => 'primary',
+    );
    
     return $form;
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $vocabList = $form_state->getValue('termfilter_vocablist');
-    \Drupal::configFactory()->getEditable('termlist.settings')->set('termlist_vocablist', $vocabList)->save();
+    \Drupal::configFactory()->getEditable('termfilter.settings')->set('vocablist', $vocabList)->save();
   }
 }

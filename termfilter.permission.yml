@@ -1,0 +1,4 @@
+administer terms filter:
+  title: 'Administer terms filter'
+  description: 'Access to term filter page'
+  restrict access: TRUE

@@ -1,4 +1,4 @@
-abbrfilter.admin:
+termfilter.admin:
   path: '/admin/config/content/termfilter'
   defaults:
     _form: '\Drupal\termfilter\Form\TermfilterForm'

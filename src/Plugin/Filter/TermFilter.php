@@ -3,6 +3,8 @@
 namespace Drupal\termfilter\Plugin\Filter;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\filter\Plugin\FilterBase;
+use Drupal\termfilter\TermfilterData;
 
 /**
  * Provides a filter to convert terms into links.
@@ -17,7 +19,14 @@ use Drupal\Core\Form\FormStateInterface;
  * )
  */
 class TermFilter extends FilterBase {
-  protected $termfilters;
+  
+  protected $termfilterData;
+
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, TermfilterData $termfilterData) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    
+    $this->termfilterData = $termfilterData;
+  }
 
   /**
    * {@inheritdoc}
@@ -36,8 +45,8 @@ class TermFilter extends FilterBase {
    * {@inheritdoc}
    */
   public function process($text, $langcode) {
-    //$list = _termfilter_list();
-    //return _termfilter_perform_subs($text, $list);
+    $list = $this->termfilterData->getTermfilterList();
+    return _termfilter_perform_subs($text, $list);
   }
   
   /**
