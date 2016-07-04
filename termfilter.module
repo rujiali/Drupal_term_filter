@@ -23,6 +23,6 @@ function termfilter_help($page = 'admin/help#termfilter', RouteMatchInterface $r
     case 'admin/help#termfilter':
       return t('<p>The Termfilter module allows you to filter terms in site content and replace the filtered terms with a tags linking to the taxonomy term view page.');
     case 'termfilter.admin':
-      return t('<p>In order for filtering to work on the body text of a node or comment, you must activate the Termfilter filter for the input formats you wish to enable filtering for. Check your filter settings at <a href="@filter">Input Formats</a>.</p>', array('@filter' => url('admin/config/content/filters')));
+      //return t('<p>In order for filtering to work on the body text of a node or comment, you must activate the Termfilter filter for the input formats you wish to enable filtering for. Check your filter settings at <a href="@filter">Input Formats</a>.</p>', array('@filter' => url('admin/config/content/filters')));
   }
 }

@@ -9,15 +9,15 @@ class TermfilterData {
   public function getTermfilterList() {
     $list = array();
 
-    $vocabName = \Drupal::config('termfilter.settings')->get('vocabList');
+    $vocabName = \Drupal::config('termfilter.settings')->get('vocablist');
     $vocabulary = Vocabulary::load($vocabName);
     $container = \Drupal::getContainer();
     $terms = $container->get('entity.manager')->getStorage('taxonomy_term')->loadTree($vocabulary->id());
 
     foreach($terms as $term) {
-      $list[$term->label()] = $vocabulary->id();
+      $list[$term->name] = $vocabulary->id();
     }
-    
+
     return $list;
   }
   
@@ -61,8 +61,9 @@ class TermfilterData {
         if (!empty($word)) {
           if (isset($fast_array[$word])) {
             $term = taxonomy_term_load_multiple_by_name($word, $fast_array[$word]);
-            $url = \Drupal::service('path.alias_manager')->getAliasByPath('taxonomy/term/' . $term[1]->tid, Language::LANGCODE_NOT_SPECIFIED);
-            $words[$key] = '<a title="' . $fast_array[$word] . '" href="/' . $url . '">' . $word . '</a>';
+            $url = \Drupal::service('path.alias_manager')->getAliasByPath('/taxonomy/term/' . $term[1]->id(), \Drupal::languageManager()->getCurrentLanguage()->getId());
+            global $base_url;
+            $words[$key] = '<a title="' . $fast_array[$word] . '" href="' .$base_url . $url . '">' . $word . '</a>';
           }
         }
       }

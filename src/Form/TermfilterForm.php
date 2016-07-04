@@ -20,7 +20,7 @@ class TermfilterForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     // Compose the vocabulary list.
     $vocab_list = taxonomy_vocabulary_get_names();
-    $checklist_vocab_array = array();
+    $checklist_vocab_array = [];
     foreach ($vocab_list as $key => $item) {
       $vocab =  Vocabulary::load($key);
       $value = $vocab->label();
@@ -30,25 +30,26 @@ class TermfilterForm extends ConfigFormBase {
     $termfilter_settings = \Drupal::config('termfilter.settings');
     $default_vocabs = $termfilter_settings->get('vocablist');
     
-    $form['termfilter_vocablist'] = array(
-      '#type'             => 'radios',
-      '#title'            => t('Select the vocabulary you want to filter.'),
-      '#position'         => 'left' ,
-      '#options'          => $checklist_vocab_array ,
-      '#default_value'    => $default_vocabs,
-    );
+    $form['termfilter_vocablist'] = [
+      '#type'          => 'select',
+      '#title'         => t('Select the vocabulary you want to filter.'),
+      '#options'       => $checklist_vocab_array ,
+      '#default_value' => $default_vocabs,
+    ];
 
-    $form['actions']['submit'] = array(
+    $form['actions']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Save'),
       '#button_type' => 'primary',
-    );
+    ];
    
     return $form;
   }
 
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $vocabList = $form_state->getValue('termfilter_vocablist');
-    \Drupal::configFactory()->getEditable('termfilter.settings')->set('vocablist', $vocabList)->save();
+  public function submitForm(array &$form, FormStateInterface $formState) {
+    $vocabList = $formState->getValue('termfilter_vocablist');
+    \Drupal::configFactory()->getEditable('termfilter.settings')
+      ->set('vocablist', $vocabList)
+      ->save();
   }
 }

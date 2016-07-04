@@ -3,8 +3,12 @@
 namespace Drupal\termfilter\Plugin\Filter;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\filter\Plugin\FilterBase;
 use Drupal\termfilter\TermfilterData;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Url;
+use Drupal\filter\FilterProcessResult;
 
 /**
  * Provides a filter to convert terms into links.
@@ -18,7 +22,7 @@ use Drupal\termfilter\TermfilterData;
  *   weight = 0
  * )
  */
-class TermFilter extends FilterBase {
+class TermFilter extends FilterBase implements ContainerFactoryPluginInterface {
   
   protected $termfilterData;
 
@@ -28,6 +32,15 @@ class TermFilter extends FilterBase {
     $this->termfilterData = $termfilterData;
   }
 
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('termfilter.data')
+    );
+  }
+
   /**
    * {@inheritdoc}
    */
@@ -35,7 +48,7 @@ class TermFilter extends FilterBase {
     $form['term_filter'] = array(
       '#type' => 'fieldset',
       '#title' => t('Term filter'),
-      '#description' => t('You can define a global list of terms to be filtered on the <a href="!url">Terms Filter settings page</a>.', array('!url' => url('admin/config/content/termfilter'))),
+      '#description' => t('You can define a global list of terms to be filtered on the <a href="!url">Terms Filter settings page</a>.', array('!url' => Url::fromRoute('termfilter.admin')->toString())),
     );
 
     return $form;
@@ -46,7 +59,8 @@ class TermFilter extends FilterBase {
    */
   public function process($text, $langcode) {
     $list = $this->termfilterData->getTermfilterList();
-    return _termfilter_perform_subs($text, $list);
+    $new_text = $this->termfilterData->termfilterPerformSubs($text, $list);
+    return new FilterProcessResult($new_text);
   }
   
   /**
