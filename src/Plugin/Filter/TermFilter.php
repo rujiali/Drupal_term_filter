@@ -5,7 +5,8 @@ namespace Drupal\termfilter\Plugin\Filter;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\filter\Plugin\FilterBase;
-use Drupal\termfilter\TermfilterData;
+use Drupal\termfilter\TermfilterReplacement;
+use Drupal\termfilter\TermfilterHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Url;
 use Drupal\filter\FilterProcessResult;
@@ -23,21 +24,37 @@ use Drupal\filter\FilterProcessResult;
  * )
  */
 class TermFilter extends FilterBase implements ContainerFactoryPluginInterface {
-  
-  protected $termfilterData;
 
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, TermfilterData $termfilterData) {
+  /**
+   * Injected \Drupal\termfilter\TermFilterReplacement service.
+   */
+  protected $termfilterReplacement;
+
+  /**
+   * Injected \Drupal\termfilter\TermfilterHelper service
+   */
+  protected $termfilterHelper;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, TermfilterReplacement $termfilterReplacement, TermfilterHelper $termfilterHelper) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     
-    $this->termfilterData = $termfilterData;
+    $this->termfilterReplacement = $termfilterReplacement;
+    $this->termfilterHelper = $termfilterHelper;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('termfilter.data')
+      $container->get('termfilter.replacement'),
+      $container->get('termfilter.helper')
     );
   }
 
@@ -58,8 +75,8 @@ class TermFilter extends FilterBase implements ContainerFactoryPluginInterface {
    * {@inheritdoc}
    */
   public function process($text, $langcode) {
-    $list = $this->termfilterData->getTermfilterList();
-    $new_text = $this->termfilterData->termfilterPerformSubs($text, $list);
+    $list = $this->termfilterHelper->getTermfilterList();
+    $new_text = $this->termfilterReplacement->termfilterPerformSubs($text, $list);
     return new FilterProcessResult($new_text);
   }
   

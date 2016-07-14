@@ -1,26 +1,26 @@
 <?php
 namespace Drupal\termfilter;
 
-use Drupal\Core\Language\Language;
-use Drupal\taxonomy\Entity\Vocabulary;
+/**
+ * Class TermfilterData
+ * @package Drupal\termfilter
+ */
+class TermfilterReplacement {
 
-class TermfilterData {
- 
-  public function getTermfilterList() {
-    $list = array();
+  /**
+   * Injected \Drupal\termfilter\TermfilterHelper service.
+   */
+  protected $termfilterHelper;
 
-    $vocabName = \Drupal::config('termfilter.settings')->get('vocablist');
-    $vocabulary = Vocabulary::load($vocabName);
-    $container = \Drupal::getContainer();
-    $terms = $container->get('entity.manager')->getStorage('taxonomy_term')->loadTree($vocabulary->id());
-
-    foreach($terms as $term) {
-      $list[$term->name] = $vocabulary->id();
-    }
-
-    return $list;
+  /**
+   * TermfilterReplacement constructor.
+   * 
+   * @param \Drupal\termfilter\TermfilterHelper $termfilterHelper
+   */
+  public function __construct(TermfilterHelper $termfilterHelper) {
+    $this->termfilterHelper = $termfilterHelper;  
   }
-  
+
   /**
    * Perform the actual term substitution.
    *
@@ -37,7 +37,7 @@ class TermfilterData {
   public function termfilterPerformSubs($text, $list) {
     // We prepare a keyed array called $fast_array because this is the
     // quickest way to search later on (using isset()).
-    $fast_array = array();
+    $fast_array = [];
     foreach ($list as $item => $vid) {
       // We want to split on word boundaries, unfortunately PCRE considers words
       // to include underscores but not other characters like dashes and slashes,
@@ -60,10 +60,9 @@ class TermfilterData {
       foreach ($words as $key => $word) {
         if (!empty($word)) {
           if (isset($fast_array[$word])) {
-            $term = taxonomy_term_load_multiple_by_name($word, $fast_array[$word]);
-            $url = \Drupal::service('path.alias_manager')->getAliasByPath('/taxonomy/term/' . $term[1]->id(), \Drupal::languageManager()->getCurrentLanguage()->getId());
-            global $base_url;
-            $words[$key] = '<a title="' . $fast_array[$word] . '" href="' .$base_url . $url . '">' . $word . '</a>';
+            $term = $this->termfilterHelper->getTermByName($word, $fast_array[$word]);
+            $termId = $this->termfilterHelper->getTermId($term[1]);
+            $words[$key] = $this->termfilterHelper->getUrlByTermId($termId, $word);
           }
         }
       }
