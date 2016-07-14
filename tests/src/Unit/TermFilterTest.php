@@ -32,9 +32,6 @@ class TermFilterTest extends UnitTestCase {
     $this->TermfilterHelper->expects($this->any())->method('getUrlByTermId')
       ->willReturn('<a href="/term/7">foo</a>');
 
-    $this->TermfilterHelper->expects($this->any())->method('getTermId')
-      ->willReturn(1);
-
     $this->TermfilterReplacement = new TermfilterReplacement($this->TermfilterHelper);
   }
 

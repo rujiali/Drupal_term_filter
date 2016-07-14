@@ -61,8 +61,7 @@ class TermfilterReplacement {
         if (!empty($word)) {
           if (isset($fast_array[$word])) {
             $term = $this->termfilterHelper->getTermByName($word, $fast_array[$word]);
-            $termId = $this->termfilterHelper->getTermId(array_values($term)[0]);
-            $words[$key] = $this->termfilterHelper->getUrlByTermId($termId, $word);
+            $words[$key] = $this->termfilterHelper->getUrlByTermId(array_keys($term)[0], $word);
           }
         }
       }

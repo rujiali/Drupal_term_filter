@@ -63,16 +63,4 @@ class TermfilterHelper {
     return $link->toString();
   }
 
-  /**
-   * Wrapper function to get term ID from given term object.
-   *
-   * @param $term
-   *   Drupal term object.
-   *
-   * @return mixed
-   *   Term ID.
-   */
-  public function getTermId($term) {
-    return $term->id();
-  }
 }
