@@ -11,7 +11,7 @@ class TermfilterHelper {
    * Get all terms in given vocabulary.
    *
    * @return array
-   *   An array of terms, key by term name. 
+   *   An array of terms, key by term name.
    */
   public function getTermfilterList() {
     $list = [];
@@ -19,9 +19,11 @@ class TermfilterHelper {
     $vocabName = \Drupal::config('termfilter.settings')->get('vocablist');
     $vocabulary = Vocabulary::load($vocabName);
     $container = \Drupal::getContainer();
-    $terms = $container->get('entity.manager')->getStorage('taxonomy_term')->loadTree($vocabulary->id());
+    $terms = $container->get('entity_type.manager')
+      ->getStorage('taxonomy_term')
+      ->loadTree($vocabulary->id());
 
-    foreach($terms as $term) {
+    foreach ($terms as $term) {
       $list[$term->name] = $vocabulary->id();
     }
 
@@ -56,17 +58,17 @@ class TermfilterHelper {
    *   Term URL.
    */
   public function getUrlByTermId($id, $word) {
-    $link = Link::fromTextAndUrl($word,  Url::fromRoute('entity.taxonomy_term.canonical', ['taxonomy_term' => $id]));
+    $link = Link::fromTextAndUrl($word, Url::fromRoute('entity.taxonomy_term.canonical', ['taxonomy_term' => $id]));
 
     return $link->toString();
   }
 
   /**
    * Wrapper function to get term ID from given term object.
-   * 
+   *
    * @param $term
    *   Drupal term object.
-   * 
+   *
    * @return mixed
    *   Term ID.
    */

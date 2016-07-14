@@ -15,26 +15,26 @@ class TermFilterTest extends UnitTestCase {
    * Mocked TermfilterHelper class.
    */
   protected $TermfilterHelper;
-  
+
   /**
    * {@inheritdoc}
    */
   public function setUp() {
     $this->TermfilterHelper = $this->getMock('\Drupal\termfilter\TermfilterHelper');
-    
+
     $this->TermfilterHelper->expects($this->any())->method('getTermByName')
       ->willReturn([
-        '1' => [
-          (object) ['name' => 'foo', 'tid' => 1],
+        '7' => [
+          (object) ['name' => 'foo', 'tid' => 7],
         ],
       ]);
 
     $this->TermfilterHelper->expects($this->any())->method('getUrlByTermId')
-      ->willReturn('<a href="/term/1">foo</a>');
+      ->willReturn('<a href="/term/7">foo</a>');
 
     $this->TermfilterHelper->expects($this->any())->method('getTermId')
       ->willReturn(1);
-    
+
     $this->TermfilterReplacement = new TermfilterReplacement($this->TermfilterHelper);
   }
 
@@ -42,12 +42,12 @@ class TermFilterTest extends UnitTestCase {
    * Test the replacement function.
    */
   public function testPerformSubs() {
-    $this->assertSame($this->TermfilterReplacement->termfilterPerformSubs($this->getTestText(), $this->getTestTermList()), '<a href="/term/1">foo</a> bar');
+    $this->assertSame($this->TermfilterReplacement->termfilterPerformSubs($this->getTestText(), $this->getTestTermList()), '<a href="/term/7">foo</a> bar');
   }
 
   /**
    * Get mocked text data.
-   * 
+   *
    * @return string
    *   Mocked text.
    */
@@ -57,7 +57,7 @@ class TermFilterTest extends UnitTestCase {
 
   /**
    * Get mocked List data.
-   * 
+   *
    * @return array
    *   Mocked list.
    */

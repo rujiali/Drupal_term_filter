@@ -35,18 +35,18 @@ class TermfilterForm extends ConfigFormBase {
     $vocab_list = taxonomy_vocabulary_get_names();
     $checklist_vocab_array = [];
     foreach ($vocab_list as $key => $item) {
-      $vocab =  Vocabulary::load($key);
+      $vocab = Vocabulary::load($key);
       $value = $vocab->label();
       $checklist_vocab_array[$key] = $value;
     }
 
     $termfilter_settings = \Drupal::config('termfilter.settings');
     $default_vocabs = $termfilter_settings->get('vocablist');
-    
+
     $form['termfilter_vocablist'] = [
-      '#type'          => 'select',
-      '#title'         => t('Select the vocabulary you want to filter.'),
-      '#options'       => $checklist_vocab_array ,
+      '#type' => 'select',
+      '#title' => t('Select the vocabulary you want to filter.'),
+      '#options' => $checklist_vocab_array,
       '#default_value' => $default_vocabs,
     ];
 
@@ -55,7 +55,7 @@ class TermfilterForm extends ConfigFormBase {
       '#value' => $this->t('Save'),
       '#button_type' => 'primary',
     ];
-   
+
     return $form;
   }
 

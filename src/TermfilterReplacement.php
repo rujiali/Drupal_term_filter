@@ -14,11 +14,11 @@ class TermfilterReplacement {
 
   /**
    * TermfilterReplacement constructor.
-   * 
+   *
    * @param \Drupal\termfilter\TermfilterHelper $termfilterHelper
    */
   public function __construct(TermfilterHelper $termfilterHelper) {
-    $this->termfilterHelper = $termfilterHelper;  
+    $this->termfilterHelper = $termfilterHelper;
   }
 
   /**
@@ -52,7 +52,7 @@ class TermfilterReplacement {
     // Provide an anonymous function for the preg_replace. This function gets
     // called a LOT, so be careful about optimization of anything that goes in
     // here.
-    $callback = function($matches) use ($fast_array) {
+    $callback = function ($matches) use ($fast_array) {
       // Split the text into an array of words, on word boundaries.
       $words = preg_split('/\b/u', $matches[0]);
 
@@ -61,7 +61,7 @@ class TermfilterReplacement {
         if (!empty($word)) {
           if (isset($fast_array[$word])) {
             $term = $this->termfilterHelper->getTermByName($word, $fast_array[$word]);
-            $termId = $this->termfilterHelper->getTermId($term[1]);
+            $termId = $this->termfilterHelper->getTermId(array_values($term)[0]);
             $words[$key] = $this->termfilterHelper->getUrlByTermId($termId, $word);
           }
         }
