@@ -2,7 +2,6 @@
 namespace Drupal\Tests\termfilter\Unit;
 
 use Drupal\Tests\UnitTestCase;
-use Drupal\termfilter\TermfilterReplacement;
 
 class TermFilterTest extends UnitTestCase {
 
