@@ -1,6 +1,10 @@
 <?php
 namespace Drupal\termfilter;
 
+use Drupal\Core\Url;
+use Drupal\Core\Link;
+use Drupal\taxonomy\Entity\Vocabulary;
+
 /**
  * Class TermfilterData
  * @package Drupal\termfilter
@@ -8,19 +12,61 @@ namespace Drupal\termfilter;
 class TermfilterReplacement {
 
   /**
-   * Injected \Drupal\termfilter\TermfilterHelper service.
-   */
-  protected $termfilterHelper;
-
-  /**
-   * TermfilterReplacement constructor.
+   * Get all terms in given vocabulary.
    *
-   * @param \Drupal\termfilter\TermfilterHelper $termfilterHelper
+   * @return array
+   *   An array of terms, key by term name.
    */
-  public function __construct(TermfilterHelper $termfilterHelper) {
-    $this->termfilterHelper = $termfilterHelper;
+  public function getTermfilterList() {
+    $list = [];
+
+    $vocabName = \Drupal::config('termfilter.settings')->get('vocablist');
+    $vocabulary = Vocabulary::load($vocabName);
+    $container = \Drupal::getContainer();
+    $terms = $container->get('entity_type.manager')
+      ->getStorage('taxonomy_term')
+      ->loadTree($vocabulary->id());
+
+    foreach ($terms as $term) {
+      $list[$term->name] = $vocabulary->id();
+    }
+
+    return $list;
   }
 
+  /**
+   * Wrapper function to return term object by term name and vocabulary ID.
+   *
+   * @param $word
+   *   Term name.
+   * @param $vid
+   *   Vocabulary ID.
+   *
+   * @return array
+   *   Array of term objects.
+   */
+  public function getTermByName($word, $vid) {
+    return taxonomy_term_load_multiple_by_name($word, $vid);
+  }
+
+  /**
+   * Wrapper function to return term link by term ID.
+   *
+   * @param $id
+   *   Term ID.
+   *
+   * @param $word
+   *   Link Text.
+   *
+   * @return String
+   *   Term URL.
+   */
+  public function getUrlByTermId($id, $word) {
+    $link = Link::fromTextAndUrl($word, Url::fromRoute('entity.taxonomy_term.canonical', ['taxonomy_term' => $id]));
+
+    return $link->toString();
+  }
+  
   /**
    * Perform the actual term substitution.
    *
@@ -60,8 +106,8 @@ class TermfilterReplacement {
       foreach ($words as $key => $word) {
         if (!empty($word)) {
           if (isset($fast_array[$word])) {
-            $term = $this->termfilterHelper->getTermByName($word, $fast_array[$word]);
-            $words[$key] = $this->termfilterHelper->getUrlByTermId(array_keys($term)[0], $word);
+            $term = $this->getTermByName($word, $fast_array[$word]);
+            $words[$key] = $this->getUrlByTermId(array_keys($term)[0], $word);
           }
         }
       }

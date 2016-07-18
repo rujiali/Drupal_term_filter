@@ -31,18 +31,12 @@ class TermFilter extends FilterBase implements ContainerFactoryPluginInterface {
   protected $termfilterReplacement;
 
   /**
-   * Injected \Drupal\termfilter\TermfilterHelper service
-   */
-  protected $termfilterHelper;
-
-  /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, TermfilterReplacement $termfilterReplacement, TermfilterHelper $termfilterHelper) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, TermfilterReplacement $termfilterReplacement) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     
     $this->termfilterReplacement = $termfilterReplacement;
-    $this->termfilterHelper = $termfilterHelper;
   }
 
   /**
@@ -53,8 +47,7 @@ class TermFilter extends FilterBase implements ContainerFactoryPluginInterface {
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('termfilter.replacement'),
-      $container->get('termfilter.helper')
+      $container->get('termfilter.replacement')
     );
   }
 
@@ -75,7 +68,7 @@ class TermFilter extends FilterBase implements ContainerFactoryPluginInterface {
    * {@inheritdoc}
    */
   public function process($text, $langcode) {
-    $list = $this->termfilterHelper->getTermfilterList();
+    $list = $this->termfilterReplacement->getTermfilterList();
     $new_text = $this->termfilterReplacement->termfilterPerformSubs($text, $list);
     return new FilterProcessResult($new_text);
   }

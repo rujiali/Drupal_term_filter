@@ -12,27 +12,21 @@ class TermFilterTest extends UnitTestCase {
   protected $TermfilterReplacement;
 
   /**
-   * Mocked TermfilterHelper class.
-   */
-  protected $TermfilterHelper;
-
-  /**
    * {@inheritdoc}
    */
   public function setUp() {
-    $this->TermfilterHelper = $this->getMock('\Drupal\termfilter\TermfilterHelper');
+    $this->TermfilterReplacement = $this->getMock('\Drupal\termfilter\TermfilterReplacement', array('getTermByName', 'getUrlByTermId'));
 
-    $this->TermfilterHelper->expects($this->any())->method('getTermByName')
+    $this->TermfilterReplacement->expects($this->any())->method('getTermByName')
       ->willReturn([
         '7' => [
           (object) ['name' => 'foo', 'tid' => 7],
         ],
       ]);
 
-    $this->TermfilterHelper->expects($this->any())->method('getUrlByTermId')
+    $this->TermfilterReplacement->expects($this->any())->method('getUrlByTermId')
       ->willReturn('<a href="/term/7">foo</a>');
 
-    $this->TermfilterReplacement = new TermfilterReplacement($this->TermfilterHelper);
   }
 
   /**

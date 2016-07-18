@@ -1,6 +1,3 @@
 services:
   termfilter.replacement:
     class: Drupal\termfilter\TermfilterReplacement
-    arguments: ['@termfilter.helper']
-  termfilter.helper:
-    class: Drupal\termfilter\TermfilterHelper
