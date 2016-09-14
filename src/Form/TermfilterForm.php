@@ -6,13 +6,19 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\system\Form;
 use Drupal\taxonomy\Entity\Vocabulary;
+use Drupal\Core\Config\ConfigFactoryInterface;
 
 /**
  * Class TermfilterForm
  * @package Drupal\termfilter\Form
  */
 class TermfilterForm extends ConfigFormBase {
-
+  /**
+   * Drupal configFactory object.
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+  
   /**
    * {@inheritdoc}
    */
@@ -30,6 +36,14 @@ class TermfilterForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
+  public function __construct(ConfigFactoryInterface $config_factory) {
+    parent::__construct($config_factory);
+    $this->configFactory = $config_factory;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state) {
     // Compose the vocabulary list.
     $vocab_list = taxonomy_vocabulary_get_names();
@@ -40,7 +54,7 @@ class TermfilterForm extends ConfigFormBase {
       $checklist_vocab_array[$key] = $value;
     }
 
-    $termfilter_settings = \Drupal::config('termfilter.settings');
+    $termfilter_settings = $this->configFactory->getEditable('termfilter.settings');
     $default_vocabs = $termfilter_settings->get('vocablist');
 
     $form['termfilter_vocablist'] = [
@@ -64,7 +78,7 @@ class TermfilterForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $formState) {
     $vocabList = $formState->getValue('termfilter_vocablist');
-    \Drupal::configFactory()->getEditable('termfilter.settings')
+    $this->configFactory->getEditable('termfilter.settings')
       ->set('vocablist', $vocabList)
       ->save();
   }
