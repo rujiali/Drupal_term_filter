@@ -46,6 +46,11 @@ class TermfilterReplacement {
     $list = [];
 
     $vocabName = $this->configFactory->getEditable('termfilter.settings')->get('vocablist');
+    
+    if (empty($vocabName)) {
+      return [];
+    }
+    
     $vocabulary = Vocabulary::load($vocabName);
     $terms = $this->entityTypeManager
       ->getStorage('taxonomy_term')
@@ -105,6 +110,10 @@ class TermfilterReplacement {
    *
    */
   public function termfilterPerformSubs($text, $list) {
+    if (empty($list)) {
+      return $text;
+    }
+    
     // We prepare a keyed array called $fast_array because this is the
     // quickest way to search later on (using isset()).
     $fast_array = [];
