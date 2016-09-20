@@ -1,6 +1,8 @@
 <?php
 namespace Drupal\termfilter;
 
+use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
 use Drupal\taxonomy\Entity\Vocabulary;
@@ -12,6 +14,29 @@ use Drupal\taxonomy\Entity\Vocabulary;
 class TermfilterReplacement {
 
   /**
+   * Drupal configuration Factory.
+   * @var \Drupal\Core\Config\ConfigFactory
+   */
+  protected $configFactory;
+
+  /**
+   * Drupal entity type manager.
+   * @var \Drupal\Core\Entity\EntityTypeManager
+   */
+  protected $entityTypeManager;
+
+  /**
+   * TermfilterReplacement constructor.
+   * 
+   * @param \Drupal\Core\Config\ConfigFactory $configFactory
+   * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
+   */
+  public function __construct(ConfigFactory $configFactory, EntityTypeManager $entityTypeManager) {
+    $this->configFactory = $configFactory;
+    $this->entityTypeManager = $entityTypeManager;
+  }
+
+  /**
    * Get all terms in given vocabulary.
    *
    * @return array
@@ -20,10 +45,9 @@ class TermfilterReplacement {
   public function getTermfilterList() {
     $list = [];
 
-    $vocabName = \Drupal::config('termfilter.settings')->get('vocablist');
+    $vocabName = $this->configFactory->getEditable('termfilter.settings')->get('vocablist');
     $vocabulary = Vocabulary::load($vocabName);
-    $container = \Drupal::getContainer();
-    $terms = $container->get('entity_type.manager')
+    $terms = $this->entityTypeManager
       ->getStorage('taxonomy_term')
       ->loadTree($vocabulary->id());
 
